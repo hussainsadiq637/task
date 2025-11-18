@@ -61,6 +61,10 @@ resource "aws_security_group" "custom_sg" {
   }
 }
 
+resource "aws_eip" "test_eip" {
+  instance = aws_instance.test.id
+  vpc      = true
+}
 
 
 resource "aws_instance" "test" {

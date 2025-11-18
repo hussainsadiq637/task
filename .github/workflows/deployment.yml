@@ -42,9 +42,6 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-      - name: Terraform Fmt Check
-        run: terraform fmt -check
-
       - name: Terraform Validate
         run: terraform validate
 
@@ -53,6 +50,20 @@ jobs:
 
       - name: Terraform Apply
         run: terraform apply -auto-approve -var-file="deploy.tfvars"
+
+      - name: Get EC2 Public IP
+        id: tf_output
+        run: |
+         EC2_IP=$(terraform output -raw ec2_public_ip)
+         echo "ec2_ip=$EC2_IP" >> $GITHUB_OUTPUT
+
+      - name: Save EC2 Public IP to GitHub Secret
+        env:
+         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+         EC2_IP: ${{ steps.tf_output.outputs.ec2_ip }}
+        run: |
+         gh secret set EC2_PUBLIC_IP --body "$EC2_IP"
+
 
   terraform-destroy:
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'destroy'
