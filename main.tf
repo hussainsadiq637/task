@@ -61,9 +61,6 @@ resource "aws_security_group" "custom_sg" {
   }
 }
 
-resource "aws_eip" "test_eip" {
-  instance = aws_instance.test.id
-}
 
 
 resource "aws_instance" "test" {

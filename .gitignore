@@ -3,3 +3,4 @@ terraform.tfstate
 test.pem
 .terraform.lock.hcl
 .t*
+terraform.tfstate.backup
