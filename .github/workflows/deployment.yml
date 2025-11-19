@@ -38,4 +38,4 @@ jobs:
           find . -name "*.tfstate"
 
           echo "Uploading terraform.tfstate to S3..."
-          aws s3 cp .terraform/terraform.tfstate s3://testtingg123/states/terraform.tfstate --acl private
+          aws s3 cp .terraform/terraform.tfstate s3://exemplifi-test-ap-northeast-1/states/terraform.tfstate --acl private
