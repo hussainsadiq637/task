@@ -42,10 +42,25 @@ jobs:
       - name: Terraform Plan
         if: github.event_name == 'push'
         run: terraform plan -var-file="deploy.tfvars"
+      - name: Debug — List workspace structure
+        run: |
+          echo "Current Directory:"
+          pwd
+          echo "------ FILE STRUCTURE ------"
+          ls -R .
 
       - name: Terraform Apply
         if: github.event_name == 'push'
         run: terraform apply -auto-approve -var-file="deploy.tfvars"
+
+      - name: Upload terraform.tfstate to S3
+        run: |
+          echo "Looking for tfstate file..."
+          find . -name "*.tfstate"
+
+          echo "Uploading terraform.tfstate to S3..."
+          aws s3 cp .terraform/terraform.tfstate s3://exemplifi-test-ap-northeast-1/states/terraform.tfstate --acl private
+
 
       # --------------------------
       # DESTROY (manual trigger)
