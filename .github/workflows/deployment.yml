@@ -1,18 +1,12 @@
-name: Terraform Apply & Destroy
+name: Upload Terraform State to S3
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch:
-    inputs:
-      do_destroy:
-        description: "Type YES to destroy resources"
-        required: true
-        default: "NO"
 
 jobs:
-  terraform:
+  upload-state:
     runs-on: ubuntu-latest
 
     env:
@@ -26,54 +20,22 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.8.0
 
       - name: Terraform Init
-        run: terraform init -input=false
-
-      # --------------------------
-      # APPLY (only on push)
-      # --------------------------
-      - name: Terraform Validate
-        if: github.event_name == 'push'
-        run: terraform validate
-
-      - name: Terraform Plan
-        if: github.event_name == 'push'
-        run: terraform plan -var-file="deploy.tfvars"
+        run: terraform init
+     
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -var-file="deploy.tfvars"
       - name: Debug — List workspace structure
         run: |
           echo "Current Directory:"
           pwd
           echo "------ FILE STRUCTURE ------"
           ls -R .
-
-      - name: Terraform Apply
-        if: github.event_name == 'push'
-        run: terraform apply -auto-approve -var-file="deploy.tfvars"
-
       - name: Upload terraform.tfstate to S3
         run: |
           echo "Looking for tfstate file..."
           find . -name "*.tfstate"
 
           echo "Uploading terraform.tfstate to S3..."
-          aws s3 cp ./terraform.tfstate s3://exemplifi-test-ap-northeast-1/states/terraform.tfstate --acl private
-
-
-      # --------------------------
-      # DESTROY (manual trigger)
-      # --------------------------
-      - name: Confirm Destroy
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          if [ "${{ github.event.inputs.do_destroy }}" != "YES" ]; then
-            echo "Destroy NOT confirmed. Exiting!"
-            exit 1
-          fi
-
-      - name: Terraform Destroy
-        if: github.event_name == 'workflow_dispatch'
-        run: terraform destroy -auto-approve -var-file="deploy.tfvars"
-
+          aws s3 cp .terraform/terraform.tfstate s3://testtingg123/states/terraform.tfstate --acl private
